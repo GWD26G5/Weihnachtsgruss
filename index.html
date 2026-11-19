@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Weihnachtsgruß</title>
+<meta name="robots" content="noindex">
+<style>
+  :root { --bg:#10281c; --card:#fffaf0; --red:#b3202a; --gold:#d4a73a; --ink:#2b2b2b; }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; min-height:100vh; display:flex; justify-content:center; padding:1.2rem;
+    background:radial-gradient(circle at top,#1f4d36,var(--bg)) fixed;
+    font-family:Georgia,"Times New Roman",serif; color:#fff;
+  }
+  main { width:100%; max-width:560px; text-align:center; display:flex; flex-direction:column; }
+  header { margin:.5rem 0 1rem; }
+  h1 { font-weight:normal; font-size:1.8rem; margin:.3rem 0; }
+  .step { margin:1rem 0; }
+  .step h2 { font-size:1rem; font-weight:normal; color:#cfe3d6; margin:0 0 .5rem; }
+  .row { display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap; }
+  button {
+    font:inherit; cursor:pointer; border-radius:999px; padding:.65rem 1.2rem;
+    border:2px solid var(--gold); background:transparent; color:#fff; min-height:44px;
+  }
+  button[aria-pressed="true"] { background:var(--gold); color:#222; }
+  button.primary { background:var(--red); border-color:var(--red); font-size:1.1rem; padding:.8rem 1.6rem; }
+  button.primary:active { filter:brightness(1.2); }
+  .card {
+    background:var(--card); color:var(--ink); border:3px solid var(--gold); border-radius:16px;
+    padding:1.8rem 1.3rem; min-height:170px; margin:1rem 0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    box-shadow:0 10px 30px rgba(0,0,0,.4);
+  }
+  #spruch { font-size:1.4rem; line-height:1.5; margin:0; transition:opacity .25s; }
+  #spruch.fade { opacity:0; }
+  #sig { margin-top:1rem; font-size:.85rem; color:var(--red); letter-spacing:.08em; }
+  footer { margin-top:auto; padding-top:1.5rem; font-size:.8rem; color:#b5cdbf; }
+  footer a { color:#9db8a8; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Ein Weihnachtsgruß für Sie</h1>
+  </header>
+
+  <section class="step">
+    <h2>Anrede</h2>
+    <div class="row" id="anrede" role="group" aria-label="Anrede">
+      <button data-v="sie" aria-pressed="true">Höflich (Sie)</button>
+      <button data-v="du" aria-pressed="false">Persönlich (Du)</button>
+    </div>
+  </section>
+
+  <section class="step">
+    <h2>Stil</h2>
+    <div class="row" id="stil" role="group" aria-label="Stil"></div>
+  </section>
+
+  <div class="card" aria-live="polite">
+    <p id="spruch">Tippen Sie auf „Spruch zeigen“.</p>
+    <div id="sig"></div>
+  </div>
+
+  <div class="row">
+    <button class="primary" id="neu">Spruch zeigen</button>
+  </div>
+
+  <footer id="footer">
+    KI-generiert: Alle Sprüche auf dieser Seite wurden mit Hilfe von künstlicher Intelligenz erstellt.
+  </footer>
+</main>
+
+<script>
+/* ============ EINSTELLUNGEN – hier anpassen ============ */
+const CONFIG = {
+  standardAnrede: "sie"               // "sie" oder "du" – kann per Link überschrieben werden
+};
+/* Direktlinks für verschiedene Karten (NFC-Tag):
+   ...weihnachtskarte.html?anrede=sie   → startet höflich
+   ...weihnachtskarte.html?anrede=du    → startet persönlich
+   ...weihnachtskarte.html?anrede=sie&stil=geschaeftlich                                */
+
+/* ============ SPRÜCHE ============ */
+const STILE = {
+  besinnlich:   "Besinnlich",
+  humorvoll:    "Humorvoll",
+  geschaeftlich:"Geschäftlich"
+};
+
+const SPRUECHE = {
+  sie: {
+    besinnlich: [
+      "Mögen die Lichter dieser Tage Ihr Herz erwärmen und Ihnen Ruhe und Zuversicht schenken.",
+      "Wir wünschen Ihnen ein friedvolles Weihnachtsfest im Kreise der Menschen, die Ihnen am Herzen liegen.",
+      "Zeit zum Innehalten, Menschen zum Liebhaben und ein Herz voller Dankbarkeit – das wünschen wir Ihnen.",
+      "Möge die Weihnachtszeit Ihnen all das schenken, was im Alltag manchmal zu kurz kommt.",
+      "Ein stilles Fest, ein warmes Licht und ein guter Start ins neue Jahr – das wünschen wir Ihnen von Herzen.",
+      "Frohe Weihnachten und viel Freude an den kleinen, leisen Momenten dieser Tage.",
+      "Ich wünsche Ihnen erholsame Feiertage, an denen die Uhren ein wenig langsamer gehen.",
+      "Möge das Licht dieser Nacht Sie auch im neuen Jahr begleiten."
+    ],
+    humorvoll: [
+      "Wir wünschen Ihnen Geschenke, die passen, und einen Baum, der gerade steht.",
+      "Möge Ihre Lichterkette beim ersten Versuch funktionieren – wir drücken die Daumen.",
+      "Frohe Weihnachten! Die Kalorien dieser Tage zählen selbstverständlich nicht.",
+      "Wir wünschen Ihnen einen Braten, der gelingt, und Gäste, die rechtzeitig wieder gehen.",
+      "Plätzchenbacken ist ein Experiment: Man weiß vorher nie, wie viele bis zur Bescherung überleben.",
+      "Möge Ihr Glühwein warm, Ihr Weihnachtsbaum nadelfest und Ihr Humor unerschütterlich sein.",
+      "Wir wünschen Ihnen ein Fest ohne Lametta-Pannen und mit reichlich guter Laune.",
+      "Der Weihnachtsmann hat Ihre Wunschliste gelesen und bittet um etwas Geduld."
+    ],
+    geschaeftlich: [
+      "Wir danken Ihnen für das entgegengebrachte Vertrauen und wünschen Ihnen frohe Weihnachten.",
+      "Für die gute Zusammenarbeit in diesem Jahr danken wir Ihnen herzlich. Besinnliche Feiertage!",
+      "Wir wünschen Ihnen und Ihren Angehörigen ein frohes Fest und einen erfolgreichen Start ins neue Jahr.",
+      "Ein herzliches Dankeschön für ein Jahr voller guter Begegnungen. Frohe Weihnachten!",
+      "Möge das neue Jahr Ihnen Gesundheit, Erfolg und viele schöne Momente bringen. Frohe Festtage!",
+      "Wir freuen uns auf die weitere Zusammenarbeit und wünschen Ihnen erholsame Feiertage.",
+      "Zum Jahresende sagen wir Danke und wünschen Ihnen ein gesegnetes Weihnachtsfest.",
+      "Frohe Weihnachten und alles Gute für das kommende Jahr – bleiben Sie gesund und zuversichtlich."
+    ]
+  },
+  du: {
+    besinnlich: [
+      "Mögen die Kerzen dieser Tage dein Herz wärmen und dir Ruhe schenken.",
+      "Ich wünsche dir Zeit zum Innehalten und Menschen, die dir am Herzen liegen.",
+      "Weihnachten ist dort, wo jemand an dich denkt. Ich denke an dich.",
+      "Ein stilles Fest, ein warmes Licht und ein Herz voller Dankbarkeit – das wünsche ich dir.",
+      "Schneeflocken fallen leise, und mit ihnen mein Wunsch: Frieden für dich und die Deinen.",
+      "Danke für ein Jahr voller guter Momente. Genieße die Feiertage in vollen Zügen.",
+      "Ein Funken Hoffnung, eine Prise Zuversicht und viel Liebe – das wünsche ich dir zu Weihnachten.",
+      "Lass das Jahr leise ausklingen und die Seele ein wenig Weihnachten schmecken."
+    ],
+    humorvoll: [
+      "Der Weihnachtsmann hat deine Wunschliste gelesen. Er lacht noch immer.",
+      "Möge dein Weihnachtsbaum gerade stehen und dein Glühwein nie leer werden.",
+      "Frohe Weihnachten! Und denk dran: Kalorien an den Feiertagen zählen nicht.",
+      "Ich wünsche dir Geschenke, die passen, und Verwandte, die pünktlich wieder gehen.",
+      "Plätzchenbacken ist wie Mathe: Am Ende fehlt immer die Hälfte.",
+      "Lametta, Lichterketten, Chaos – willkommen in der schönsten Zeit des Jahres!",
+      "Der Baum nadelt, die Kinder drehen durch, der Braten brennt an. Frohes Fest!",
+      "Mögen deine Lichterketten beim ersten Versuch funktionieren. Ein Wunder, ich weiß."
+    ],
+    geschaeftlich: [
+      "Danke für die tolle Zusammenarbeit in diesem Jahr. Frohe Weihnachten!",
+      "Ich wünsche dir erholsame Feiertage und einen guten Start ins neue Jahr.",
+      "Danke für dein Vertrauen. Frohe Weihnachten und einen schönen Jahresausklang!",
+      "Schöne Feiertage und alles Gute fürs neue Jahr – ich freue mich auf weitere gemeinsame Projekte.",
+      "Zum Jahresende ein herzliches Dankeschön. Genieße die Auszeit!",
+      "Frohe Weihnachten! Lade die Akkus auf, wir sehen uns im neuen Jahr.",
+      "Bleib gesund, genieße die Feiertage und komm gut ins neue Jahr.",
+      "Ein dickes Dankeschön für ein gutes Miteinander. Frohes Fest!"
+    ]
+  }
+};
+
+/* ============ LOGIK ============ */
+const $ = id => document.getElementById(id);
+const params = new URLSearchParams(location.search);
+
+let anrede = params.get("anrede") === "du" ? "du" :
+             params.get("anrede") === "sie" ? "sie" : CONFIG.standardAnrede;
+let stil = STILE[params.get("stil")] ? params.get("stil") : "besinnlich";
+let letzter = null, aktuell = "";
+
+/* Stil-Buttons erzeugen */
+for (const [key, label] of Object.entries(STILE)) {
+  const b = document.createElement("button");
+  b.textContent = label; b.dataset.v = key;
+  b.setAttribute("aria-pressed", key === stil);
+  b.onclick = () => { stil = key; letzter = null; markieren(); zeigen(); };
+  $("stil").append(b);
+}
+
+function markieren() {
+  document.querySelectorAll("#anrede button").forEach(b =>
+    b.setAttribute("aria-pressed", b.dataset.v === anrede));
+  document.querySelectorAll("#stil button").forEach(b =>
+    b.setAttribute("aria-pressed", b.dataset.v === stil));
+  document.querySelector("h1").textContent = anrede === "du"
+    ? "Ein Weihnachtsgruß für dich" : "Ein Weihnachtsgruß für Sie";
+}
+
+document.querySelectorAll("#anrede button").forEach(b => b.onclick = () => {
+  anrede = b.dataset.v; letzter = null; markieren(); zeigen();
+});
+
+function zeigen() {
+  const liste = SPRUECHE[anrede][stil];
+  let i;
+  do { i = Math.floor(Math.random() * liste.length); } while (liste.length > 1 && i === letzter);
+  letzter = i; aktuell = liste[i];
+  const p = $("spruch");
+  p.classList.add("fade");
+  setTimeout(() => {
+    p.textContent = "„" + aktuell + "“";
+    $("sig").textContent = STILE[stil].toUpperCase();
+    p.classList.remove("fade");
+  }, 200);
+}
+
+$("neu").onclick = zeigen;
+
+markieren();
+zeigen();
+</script>
+</body>
+</html>
